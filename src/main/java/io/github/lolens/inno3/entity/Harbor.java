@@ -1,5 +1,6 @@
 package io.github.lolens.inno3.entity;
 
+import io.github.lolens.inno3.exception.DockException;
 import io.github.lolens.inno3.exception.WarehouseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,21 +48,29 @@ public class Harbor {
         for (Dock dock : docks) {
           if (dock.isFree()) {
             dock.occupy(ship);
+            ship.dockTo(dock);
             return dock;
           }
         }
         dockAvailable.await();
       }
+    } catch (DockException e) {
+      logger.error("Tried docking ship to an already full dock");
+      throw new RuntimeException(e);
     } finally {
       dockLock.unlock();
     }
   }
 
-  public void undockShip(Dock dock, Ship ship) {
+  public void undockShip(Ship ship) {
     dockLock.lock();
     try {
+      Dock dock = ship.undock();
       dock.release();
       dockAvailable.signalAll();
+    } catch (DockException e) {
+      logger.error("Tried undocking ship from an empty dock");
+      throw new RuntimeException(e);
     } finally {
       dockLock.unlock();
     }
