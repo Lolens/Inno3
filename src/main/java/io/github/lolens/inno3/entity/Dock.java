@@ -1,29 +1,37 @@
 package io.github.lolens.inno3.entity;
 
+import io.github.lolens.inno3.exception.DockException;
+
 public class Dock {
 
   private final int id;
-  /// -1 if not occupied
-  private int occupiedByShipId = -1;
+  /// {@code null} if not occupied
+  private Ship currentlyOccupiedShip = null;
 
   public Dock(int id) {
     this.id = id;
   }
 
   public boolean isFree() {
-    return occupiedByShipId == -1;
+    return currentlyOccupiedShip == null;
   }
 
-  public void occupy(Ship ship) {
-    this.occupiedByShipId = ship.getId();
+  public void occupy(Ship ship) throws DockException {
+    if (this.currentlyOccupiedShip != null) {
+      throw new DockException(DockException.DOCK_ALREADY_OCCUPIED);
+    }
+    this.currentlyOccupiedShip = ship;
   }
 
-  public void release() {
-    this.occupiedByShipId = -1;
+  public void release() throws DockException {
+    if (this.currentlyOccupiedShip == null) {
+      throw new DockException(DockException.DOCK_ALREADY_EMPTY);
+    }
+    this.currentlyOccupiedShip = null;
   }
 
-  public int getOccupiedByShipId() {
-    return occupiedByShipId;
+  public Ship getShip() {
+    return currentlyOccupiedShip;
   }
 
 

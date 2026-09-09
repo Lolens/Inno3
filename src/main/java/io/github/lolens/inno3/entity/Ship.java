@@ -60,8 +60,11 @@ public class Ship implements Callable<Ship.ExecutionResult> {
     this.currentDock = dock;
   }
 
-  public void undock() {
-    this.currentDock = null;
+  public Dock undock() {
+    if (currentDock == null) throw new IllegalStateException("Ship tried to undock while not docked");
+    Dock undockedFrom = currentDock;
+    currentDock = null;
+    return undockedFrom;
   }
 
   public Dock getCurrentDock() {

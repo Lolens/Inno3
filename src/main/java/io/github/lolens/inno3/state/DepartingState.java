@@ -6,7 +6,7 @@ import io.github.lolens.inno3.entity.Ship;
 public class DepartingState implements ShipState{
   @Override
   public ShipState advance(Ship ship, Harbor harbor) throws InterruptedException {
-    harbor.undockShip(ship.getCurrentDock(), ship);
+    harbor.undockShip(ship);
 
     return new DepartedState();
   }
