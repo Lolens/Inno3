@@ -9,6 +9,6 @@ public interface ShipState {
 
   String getName();
 
-  boolean isLast();
+  boolean hasNext();
 
 }

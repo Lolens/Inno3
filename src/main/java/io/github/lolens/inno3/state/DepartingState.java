@@ -17,7 +17,7 @@ public class DepartingState implements ShipState{
   }
 
   @Override
-  public boolean isLast() {
-    return false;
+  public boolean hasNext() {
+    return true;
   }
 }

@@ -5,7 +5,7 @@ import io.github.lolens.inno3.entity.Ship;
 
 import java.util.concurrent.TimeUnit;
 
-public class DockedState implements ShipState{
+public class DockedState implements ShipState {
   @Override
   public ShipState advance(Ship ship, Harbor harbor) throws InterruptedException {
     for (int i = 0; i < ship.getToUnload(); i++) {
@@ -23,7 +23,7 @@ public class DockedState implements ShipState{
   }
 
   @Override
-  public boolean isLast() {
-    return false;
+  public boolean hasNext() {
+    return true;
   }
 }
