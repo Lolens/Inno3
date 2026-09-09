@@ -8,23 +8,23 @@ import java.util.concurrent.TimeUnit;
 
 public class Ship implements Callable<Ship.ExecutionResult> {
 
-    private final int id;
-    private final int capacity;
-    private int currentLoad;
+  private final int id;
+  private final int capacity;
+  private int currentLoad;
 
-    private final int toLoad;
-    private final int toUnload;
+  private final int toLoad;
+  private final int toUnload;
 
-    private ShipState state;
-    private Dock currentDock;
+  private ShipState state;
+  private Dock currentDock;
 
-  public Ship(int shipId, int capacity, int currentLoad, int toLoad, int dockToUnload) {
+  public Ship(int shipId, int capacity, int currentLoad, int toLoad, int toUnload) {
     if (currentLoad > capacity) throw new IllegalArgumentException("Load can't be higher than capacity");
     this.id = shipId;
-    this.currentLoad = currentLoad;
     this.capacity = capacity;
+    this.currentLoad = currentLoad;
     this.toLoad = toLoad;
-    this.toUnload = dockToUnload;
+    this.toUnload = toUnload;
     this.state = new WaitingState();
   }
 
@@ -48,12 +48,12 @@ public class Ship implements Callable<Ship.ExecutionResult> {
     return toUnload;
   }
 
-  public int remove() {
-    return currentLoad--;
+  public void remove() {
+    currentLoad--;
   }
 
-  public int add() {
-    return currentLoad++;
+  public void add() {
+    currentLoad++;
   }
 
   public void dockTo(Dock dock) {
@@ -74,17 +74,34 @@ public class Ship implements Callable<Ship.ExecutionResult> {
 
   @Override
   public ExecutionResult call() throws Exception {
+    int holdBeforeLoading = this.currentLoad;
     long startTime = System.nanoTime();
 
-    while (!state.isLast()) {
+    while (state.hasNext()) {
       state = state.advance(this, Harbor.getInstance());
     }
 
     long endTime = System.nanoTime();
-
     long time = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
-    return new ExecutionResult(id, time);
+    return new ExecutionResult(
+        id,                 // id
+        time,               // time to complete
+        holdBeforeLoading,  // initial cargo hold
+        this.currentLoad,   // cargo hold after loading is done
+        toLoad,             // count to load
+        toUnload            // count to unload
+    );
   }
 
-  public record ExecutionResult(int id, long timeToEnd) {}
+  public record ExecutionResult(
+      int id,
+      long timeToEnd,
+
+      int holdBeforeLoading,
+      int holdAfterLoading,
+
+      int toLoad,
+      int toUnload
+  ) {
+  }
 }

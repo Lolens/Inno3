@@ -23,14 +23,14 @@ public class Main {
 
   static {
     try {
-      FILE_PATH = getFilePathFromResources("input.txt");
+      FILE_PATH = getFilePathFromResources();
     } catch (Exception e) {
       throw new RuntimeException("Failed to initialize FILE_PATH", e);
     }
   }
 
-  private static Path getFilePathFromResources(String resourceName) throws FileNotFoundException, URISyntaxException {
-    URL fileURL = Main.class.getClassLoader().getResource(resourceName);
+  private static Path getFilePathFromResources() throws FileNotFoundException, URISyntaxException {
+    URL fileURL = Main.class.getClassLoader().getResource("input.txt");
     if (fileURL == null) throw new FileNotFoundException("Specified file is null.");
     return Path.of(fileURL.toURI());
   }
@@ -66,7 +66,22 @@ public class Main {
       for (Future<Ship.ExecutionResult> future : futures) {
         try {
           Ship.ExecutionResult result = future.get();
-          logger.info("Ship with id '{}' finished in {} ms", result.id(), result.timeToEnd());
+          logger.info(
+              """
+              
+              ===== SHIP =====
+              Id: {}
+              To load: {}
+              To unload: {}
+              
+              Held before loading: {}
+              Held after loading: {}
+              
+              Time to end: {}
+              =================
+              """,
+              result.id(), result.toLoad(), result.toUnload(), result.holdBeforeLoading(), result.holdAfterLoading(), result.timeToEnd()
+          );
         } catch (ExecutionException e) {
           logger.error("Failed to retrieve execution result", e.getCause());
         }
