@@ -2,11 +2,15 @@ package io.github.lolens.inno3.entity;
 
 import io.github.lolens.inno3.state.ShipState;
 import io.github.lolens.inno3.state.WaitingState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class Ship implements Callable<Ship.ExecutionResult> {
+
+  private static final Logger logger = LoggerFactory.getLogger(Ship.class);
 
   private final int id;
   private final int capacity;
@@ -77,8 +81,18 @@ public class Ship implements Callable<Ship.ExecutionResult> {
     int holdBeforeLoading = this.currentLoad;
     long startTime = System.nanoTime();
 
-    while (state.hasNext()) {
-      state = state.advance(this, Harbor.getInstance());
+    try {
+      while (state.hasNext()) {
+        state = state.advance(this, Harbor.getInstance());
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt(); // Should returning thread have interrupted flag or not??
+      logger.warn("Ship {} interrupted while in state {}", id, state.getName());
+      throw e;
+    } finally {
+      if (currentDock != null) {
+        Harbor.getInstance().undockShip(this);
+      }
     }
 
     long endTime = System.nanoTime();
