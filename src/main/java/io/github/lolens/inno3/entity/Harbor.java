@@ -76,6 +76,20 @@ public class Harbor {
     }
   }
 
+  /*
+   * (walkthrough for the case where the warehouse is full):
+   *
+   * 1. A thread enters the method and acquires warehouseLock.
+   * 2. If the warehouse is full, it reaches warehouseHasSpace.await() and goes to sleep, releasing the lock.
+   * 3. Another thread, inside loadFromWarehouse(), signals all threads sleeping on that condition.
+   * 4. All those threads wake up and move into the queue to reacquire
+   *    warehouseLock (the same lock the condition was created from).
+   * 5. Under ReentrantLock fairness, the longest-waiting thread acquires the lock first
+   *    and resumes exactly where it went to sleep; since it's first in line
+   *    right after space was freed, it proceeds past the while-check.
+   * 6. It unloads a single unit of cargo, finishes the method (releasing
+   *    the lock), then sleeps, and afterward re-runs the method if there are still unload iterations left.
+   */
   public void unloadToWarehouse(Ship ship) throws InterruptedException {
     warehouseLock.lock();
     try {
