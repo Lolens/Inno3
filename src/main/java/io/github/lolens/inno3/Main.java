@@ -57,9 +57,10 @@ public class Main {
 
       executorService.shutdown();
 
-      if (executorService.awaitTermination(10, TimeUnit.SECONDS)) {
+      if (executorService.awaitTermination(100, TimeUnit.MILLISECONDS)) {
         logger.info("Executor service shut down successfully");
       } else {
+        executorService.shutdownNow();
         logger.warn("Executor service terminated without finishing all tasks");
       }
 
@@ -68,7 +69,6 @@ public class Main {
           Ship.ExecutionResult result = future.get();
           logger.info(
               """
-              
               ===== SHIP =====
               Id: {}
               To load: {}
@@ -83,15 +83,15 @@ public class Main {
               result.id(), result.toLoad(), result.toUnload(), result.holdBeforeLoading(), result.holdAfterLoading(), result.timeToEnd()
           );
         } catch (ExecutionException e) {
-          logger.error("Failed to retrieve execution result", e.getCause());
+          Throwable cause = e.getCause();
+          String reason = (cause.getMessage() != null) ? cause.getMessage() : cause.getClass().getSimpleName();
+          logger.error("Failed to retrieve execution result. Reason: {}", reason);
         }
       }
 
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-
-
   }
 
 }
